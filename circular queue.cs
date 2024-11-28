@@ -1,85 +1,88 @@
-﻿using System;
+using System;
 
 public class CircularQueue
 {
-    private int size; // اندازه صف
-    private int front; // نمای جلوی صف
-    private int rear; // نمای عقب صف
-    private int[] queue; // آرایه برای ذخیره عناصر صف
+    private int size;
+    private int[] queue;
+    public int front;
+    public int rear;
 
-    // سازنده
     public CircularQueue(int size)
     {
         this.size = size;
-        this.front = -1;
-        this.rear = -1;
-        this.queue = new int[size];
+        queue = new int[size];
+        front = -1;
+        rear = -1;
     }
 
-    // متد برای درج یک عنصر جدید در صف
-    public void enQueue(int data)
+    public bool IsEmpty()
     {
-        // شرط برای پر بودن صف
-        if ((front == 0 && rear == size - 1) || (rear == (front - 1) % (size - 1)))
-        {
-            Console.WriteLine("Queue is Full");
-            return;
-        }
-
-        // شرط برای صف خالی
-        if (front == -1)
-        {
-            front = rear = 0;
-            queue[rear] = data;
-        }
-        else if (rear == size - 1 && front != 0)
-        {
-            rear = 0;
-            queue[rear] = data;
-        }
-        else
-        {
-            rear++;
-            queue[rear] = data;
-        }
+        return front == -1;
     }
 
-    // متد برای حذف یک عنصر از صف
-    public int deQueue()
+    public bool IsFull()
     {
-        if (front == -1)
+        return (rear + 1) % size == front;
+    }
+
+    public string Enqueue(int value)
+    {
+        if (IsFull())
         {
-            Console.WriteLine("Queue is Empty");
-            return -1;
+            return "Queue is full";
         }
 
-        int temp = queue[front];
-        if (front == rear)
-        {
-            front = rear = -1; // اگر فقط یک عنصر وجود داشته باشد
-        }
-        else if (front == size - 1)
+        if (front == -1)
         {
             front = 0;
         }
-        else
-        {
-            front++;
-        }
 
-        return temp;
+        rear = (rear + 1) % size;
+        queue[rear] = value;
+        return null;
     }
 
-    // متد برای نمایش عناصر صف
-    public void displayQueue()
+    public string Dequeue()
     {
-        if (front == -1)
+        if (IsEmpty())
         {
-            Console.WriteLine("Queue is Empty");
+            return "Queue is empty";
+        }
+
+        int dequeuedValue = queue[front];
+        queue[front] = 0; // Optional: clear the value
+
+        if (front == rear)
+        {
+            front = -1;
+            rear = -1;
+        }
+        else
+        {
+            front = (front + 1) % size;
+        }
+
+        return dequeuedValue.ToString();
+    }
+
+    public string Peek()
+    {
+        if (IsEmpty())
+        {
+            return "Queue is empty";
+        }
+        return queue[front].ToString();
+    }
+
+    public void Display()
+    {
+        if (IsEmpty())
+        {
+            Console.WriteLine("Queue is empty");
             return;
         }
 
-        Console.Write("Elements in the circular queue are: ");
+        Console.Write("Queue: ");
         if (rear >= front)
         {
             for (int i = front; i <= rear; i++)
@@ -101,38 +104,74 @@ public class CircularQueue
         Console.WriteLine();
     }
 
-    // کد اصلی
+    public string Reverse()
+    {
+        if (IsEmpty())
+        {
+            return "Queue is empty";
+        }
+
+        int count = (rear >= front) ? (rear - front + 1) : (size - front + rear + 1);
+        int[] elements = new int[count];
+
+        // کپی کردن عناصر به آرایه
+        for (int i = 0; i < count; i++)
+        {
+            elements[i] = queue[(front + i) % size]; // کپی کردن عناصر با استفاده از اندیس دایره‌ای
+        }
+
+        Array.Reverse(elements); // معکوس کردن آرایه
+
+        // ریست کردن صف
+        queue = new int[size];
+        front = 0;
+        rear = count - 1;
+
+        // کپی کردن عناصر معکوس به صف
+        for (int i = 0; i < count; i++)
+        {
+            queue[i] = elements[i];
+        }
+
+        return null; // هیچ خطایی نیست
+    }
+}
+
+public class Program
+{
     public static void Main()
     {
-        CircularQueue q = new CircularQueue(5);
+        CircularQueue circle = new CircularQueue(5);
+        Console.WriteLine(circle.rear);
+        Console.WriteLine(circle.front);
+        circle.Display();
 
-        q.enQueue(14);
-        q.enQueue(22);
-        q.enQueue(13);
-        q.enQueue(-6);
+        // Adding elements to the queue
+        circle.Enqueue(10);
+        circle.Enqueue(20);
+        circle.Enqueue(30);
+        circle.Enqueue(40);
+        circle.Enqueue(50);
 
-        q.displayQueue();
+        // Display the queue
+        circle.Display();
 
-        int x = q.deQueue();
-        if (x != -1)
-        {
-            Console.WriteLine("Deleted value = " + x);
-        }
+        // Trying to enqueue when the queue is full
+        Console.WriteLine(circle.Enqueue(60)); // Should indicate that the queue is full
 
-        x = q.deQueue();
-        if (x != -1)
-        {
-            Console.WriteLine("Deleted value = " + x);
-        }
+        // Dequeue elements
+        Console.WriteLine("Dequeued: " + circle.Dequeue());
+        circle.Display();
 
-        q.displayQueue();
+        Console.WriteLine("Dequeued: " + circle.Dequeue());
+        circle.Display();
 
-        q.enQueue(9);
-        q.enQueue(20);
-        q.enQueue(5);
+        // Add a new element after dequeuing
+        circle.Enqueue(60);
+        circle.Display();
 
-        q.displayQueue();
-
-        q.enQueue(20);
+        // Reverse the queue
+        circle.Reverse();
+        circle.Display();
     }
 }
